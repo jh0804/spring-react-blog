@@ -1,25 +1,16 @@
 package shop.mtcoding.blog.board;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
-import shop.mtcoding.blog._core.errors.exception.Exception400;
-import shop.mtcoding.blog._core.errors.exception.Exception401;
 import shop.mtcoding.blog._core.utils.ApiUtil;
-import shop.mtcoding.blog._core.utils.JwtUtil;
 import shop.mtcoding.blog.user.SessionUser;
-import shop.mtcoding.blog.user.User;
-
-import java.util.List;
 
 @RequiredArgsConstructor // final이 붙은 친구들의 생성자를 만들어줘
 @RestController // new BoardController(IoC에서 BoardRepository를 찾아서 주입) -> IoC 컨테이너 등록
@@ -29,40 +20,13 @@ public class BoardController {
     private final HttpSession session;
 
     @GetMapping("/")
-    public ResponseEntity<?> mainV2(@PageableDefault(size=3, sort="id", direction = Sort.Direction.DESC) Pageable pageable, String keyword){
+    public ResponseEntity<?> mainV2(@PageableDefault(size = 3, sort = "id", direction = Sort.Direction.DESC) Pageable pageable, @RequestParam(defaultValue = "") String keyword) {
         BoardResponse.MainV2DTO respDTO = boardService.글목록조회V2(pageable, keyword);
         return ResponseEntity.ok(new ApiUtil(respDTO));
     }
 
-    // 인증 필요 없음
-    @GetMapping("/v1")
-    public ResponseEntity<?> mainV1(){
-        List<BoardResponse.MainDTO> respDTO = boardService.글목록조회();
-        return ResponseEntity.ok(new ApiUtil(respDTO));
-    }
-
-    // 인증 필요 없음
-    @GetMapping("/api/boards/{id}/detail")
-    public ResponseEntity<?> detail(@PathVariable Integer id, HttpServletRequest request){
-
-        String jwt = request.getHeader("Authorization");
-
-        BoardResponse.DetailDTO respDTO = null;
-
-        try {
-            if(!jwt.isEmpty()){
-                jwt = jwt.replace("Bearer ", "");
-                SessionUser sessionUser = JwtUtil.verify(jwt);
-                respDTO = boardService.글상세보기(id, sessionUser);
-            }
-        }catch (Exception e){
-            throw new Exception401("토큰 검증 실패");
-        }
-        return ResponseEntity.ok(new ApiUtil(respDTO));
-    }
-
     @GetMapping("/api/boards/{id}")
-    public ResponseEntity<?> findOne(@PathVariable Integer id){
+    public ResponseEntity<?> findOne(@PathVariable Integer id) {
         BoardResponse.DTO respDTO = boardService.글조회(id);
         return ResponseEntity.ok(new ApiUtil(respDTO));
     }
