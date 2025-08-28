@@ -1,53 +1,28 @@
 package shop.mtcoding.blog._core.interceptor;
 
-import com.auth0.jwt.exceptions.JWTDecodeException;
-import com.auth0.jwt.exceptions.TokenExpiredException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.web.servlet.HandlerInterceptor;
-import org.springframework.web.servlet.ModelAndView;
 import shop.mtcoding.blog._core.errors.exception.Exception401;
-import shop.mtcoding.blog._core.errors.exception.Exception500;
-import shop.mtcoding.blog._core.utils.JwtUtil;
 import shop.mtcoding.blog.user.SessionUser;
-import shop.mtcoding.blog.user.User;
 
-// /api/** 인증 필요 주소
-public class LoginInterceptor implements HandlerInterceptor{
-
-    @Override
-    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
-        HttpSession session = request.getSession();
-        session.invalidate();
-    }
+public class LoginInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        // 필터에서 이미 세션에 사용자 정보를 넣어주었으므로,
+        // 여기서는 세션에 해당 정보가 있는지 확인만 합니다.
+        SessionUser sessionUser = (SessionUser) request.getAttribute("sessionUser");
 
-        // Bearer jwt토큰
-        String jwt = request.getHeader("Authorization");
-
-        if(jwt == null){
-            throw new Exception401("jwt 토큰을 전달해주세요");
+        // 세션에 정보가 없으면 예외를 발생시켜 요청을 중단합니다.
+        if (sessionUser == null) {
+            throw new Exception401("인증이 필요한 서비스입니다.");
         }
 
-        jwt = jwt.replace("Bearer ", "");
-
-        // 검증
-        try {
-            SessionUser sessionUser = JwtUtil.verify(jwt);
-
-            // 임시 세션 (jsessionId는 필요 없음)
-            HttpSession session = request.getSession();
-            session.setAttribute("sessionUser", sessionUser);
-            return true;
-        }catch (TokenExpiredException e){
-            throw new Exception401("토큰 만료시간이 지났어요. 다시 로그인하세요");
-        }catch (JWTDecodeException e){
-            throw new Exception401("토큰이 유효하지 않습니다");
-        }catch (Exception e){
-            throw new Exception(e.getMessage());
-        }
+        // 세션에 정보가 있으면 다음 단계(컨트롤러)로 진행합니다.
+        return true;
     }
+
+    // postHandle, afterCompletion 등의 메서드는 필요에 따라 구현합니다.
+    // 현재 요구사항에서는 불필요하므로 제거했습니다.
 }
