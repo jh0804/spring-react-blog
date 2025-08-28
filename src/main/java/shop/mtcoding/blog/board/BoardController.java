@@ -27,7 +27,8 @@ public class BoardController {
 
     @GetMapping("/api/boards/{id}")
     public ResponseEntity<?> findOne(@PathVariable Integer id) {
-        BoardResponse.DTO respDTO = boardService.글조회(id);
+        SessionUser sessionUser = (SessionUser) session.getAttribute("sessionUser");
+        BoardResponse.DetailDTO respDTO = boardService.글조회(id, sessionUser);
         return ResponseEntity.ok(new ApiUtil(respDTO));
     }
 
