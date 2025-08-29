@@ -6,12 +6,16 @@ import lombok.Data;
 public class ReplyResponse {
 
     @Data
-    public static class SaveDTO {
+    public static class DTO {
+        private Integer replyId;
         private Integer boardId;
+        private Integer userId;
         private String comment;
 
-        public SaveDTO(Integer boardId, Reply reply) {
-            this.boardId = boardId;
+        public DTO(Reply reply) {
+            this.replyId = reply.getId();
+            this.boardId = reply.getBoard().getId();
+            this.userId = reply.getUser().getId();
             this.comment = reply.getComment();
         }
     }
