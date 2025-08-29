@@ -19,4 +19,21 @@ public class ReplyResponse {
             this.comment = reply.getComment();
         }
     }
+
+    @Data
+    public static class DetailDTO {
+        private Integer id;
+        private String comment;
+        private Integer userId;
+        private String username;
+        private Boolean owner;
+
+        public DetailDTO(Reply reply, int sessionUserId) {
+            this.id = reply.getId();
+            this.comment = reply.getComment();
+            this.userId = reply.getUser().getId(); // id이므로 lazy loading 안됨
+            this.username = reply.getUser().getUsername(); // lazy loading 안됨
+            this.owner = reply.getUser().getId() == sessionUserId;
+        }
+    }
 }

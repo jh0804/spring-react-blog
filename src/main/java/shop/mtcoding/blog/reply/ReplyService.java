@@ -19,7 +19,7 @@ public class ReplyService {
     private final UserJPARepository userJPARepository;
 
     @Transactional
-    public ReplyResponse.DTO 댓글쓰기(ReplyRequest.SaveDTO reqDTO, SessionUser sessionUser) {
+    public ReplyResponse.DetailDTO 댓글쓰기(ReplyRequest.SaveDTO reqDTO, SessionUser sessionUser) {
         User user = userJPARepository.findById(sessionUser.getId()).orElseThrow();
 
         Board board = boardJPARepository.findById(reqDTO.getBoardId())
@@ -29,7 +29,10 @@ public class ReplyService {
 
         replyJPARepository.save(reply);
 
-        return new ReplyResponse.DTO(reply);
+        // 어차피 insert + select 발생하므로 join fetch 할 필요 X -> laxy loading으로 처리
+        // 근데 lazy loading도 sessionUser 있으니까 그걸로 처리
+        // 근데 Reply reply = reqDTO.toEntity(user, board);에 의해 user가 영속화 되어있으므로 lazy loading 안됨 + 할 필요x
+        return new ReplyResponse.DetailDTO(reply, sessionUser.getId());
     }
 
     @Transactional
